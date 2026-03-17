@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ScriptForge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css">
+<link rel="stylesheet" href="../css/base.css">
+</head>
+
+<body>
+
+<main class="app-shell">
+<header class="hero">
+<p class="eyebrow">Biblioteca Portatil</p>
+<h1>ScriptForge</h1>
+<p class="subtitle">Sube tus scripts, documentalos y recuperalos en segundos desde cualquier lugar.</p>
+</header>
+
+<div class="workspace-layout">
+<nav class="panel menu" aria-label="Navegacion principal">
+<button type="button" class="menu-item is-active" data-nav-target="add"><i class="bi bi-plus-square"></i> Agregar script</button>
+<button type="button" class="menu-item" data-nav-target="library"><i class="bi bi-collection"></i> Biblioteca</button>
+<button type="button" class="menu-item" data-nav-target="tester"><i class="bi bi-terminal"></i> Probador</button>
+<button type="button" class="menu-item" data-nav-target="backup"><i class="bi bi-cloud-arrow-up"></i> Respaldo</button>
+</nav>
+
+<div class="view-stack">
+<section class="panel page-section is-active" data-page="add">
+<h2><i class="bi bi-file-earmark-plus"></i> Agregar Script</h2>
+<form id="scriptForm">
+<div class="grid-2">
+<label>
+Nombre
+<input id="name" type="text" required placeholder="Ej: Limpieza de logs">
+</label>
+<label>
+Lenguaje
+<input id="language" type="text" placeholder="Ej: Bash, Python, JavaScript">
+</label>
+</div>
+
+<label>
+Descripcion
+<textarea id="description" rows="3" required placeholder="Que hace este script y cuando usarlo"></textarea>
+</label>
+
+<section class="instruction-builder">
+<div class="list-head section-head">
+<h3><i class="bi bi-list-check"></i> Instrucciones por pasos</h3>
+<span id="stepCountPreview" class="count-pill">0 pasos</span>
+</div>
+
+<div class="grid-2">
+<label>
+Cantidad sugerida
+<select id="stepPreset">
+<option value="0">Sin pasos</option>
+<option value="1">1 paso</option>
+<option value="2">2 pasos</option>
+<option value="3">3 pasos</option>
+<option value="4">4 pasos</option>
+<option value="5">5 pasos</option>
+<option value="6">6 pasos</option>
+</select>
+</label>
+<label>
+O escribe la cantidad
+<input id="stepCustom" type="number" min="0" max="20" step="1" placeholder="Ej: 8">
+</label>
+</div>
+
+<div id="stepFields" class="step-fields"></div>
+</section>
+
+<label>
+Subir archivo
+<input id="fileInput" type="file" accept=".js,.ts,.py,.sh,.ps1,.bat,.cmd,.sql,.php,.rb,.go,.java,.cs,.txt,.json,.yml,.yaml,.md,.xml,.html,.css">
+</label>
+
+<label>
+O pega el codigo
+<textarea id="code" rows="8" placeholder="Pega aqui el codigo del script"></textarea>
+</label>
+
+<div class="actions-row">
+<button type="submit"><i class="bi bi-save"></i> Guardar script</button>
+<button id="clearForm" type="button" class="secondary"><i class="bi bi-eraser"></i> Limpiar</button>
+</div>
+</form>
+</section>
+
+<section class="page-section" data-page="library">
+<section class="panel toolbar">
+<label class="search-field">
+Buscar
+<input id="search" type="search" placeholder="Nombre, descripcion o lenguaje">
+</label>
+</section>
+
+<section class="panel">
+<div class="list-head">
+<h2><i class="bi bi-braces"></i> Mis Scripts</h2>
+<span id="count" class="count-pill">0 scripts</span>
+</div>
+<div id="scripts" class="script-list"></div>
+</section>
+</section>
+
+<section class="panel page-section" data-page="tester">
+<div class="list-head">
+<h2><i class="bi bi-terminal"></i> Probador de Scripts</h2>
+<span id="testerStatus" class="count-pill tester-pill">Listo</span>
+</div>
+<p class="subtitle">Ejecucion real disponible para JavaScript dentro del navegador. CMD, BAT, PS1, Bash, Python y otros lenguajes requieren backend o app de escritorio.</p>
+
+<div class="grid-2 tester-grid">
+<label>
+Script guardado
+<select id="testerScriptSelect">
+<option value="">Selecciona un script</option>
+</select>
+</label>
+<label>
+Lenguaje detectado
+<input id="testerLanguage" type="text" readonly placeholder="Se completa al elegir un script">
+</label>
+</div>
+
+<label>
+Codigo a ejecutar
+<textarea id="testerCode" rows="12" placeholder="Aqui se cargara el codigo del script o puedes pegar JavaScript manualmente"></textarea>
+</label>
+
+<div class="actions-row tester-actions">
+<button id="runScriptBtn" type="button"><i class="bi bi-play-fill"></i> Ejecutar</button>
+<button id="clearTesterBtn" type="button" class="secondary"><i class="bi bi-arrow-counterclockwise"></i> Limpiar salida</button>
+</div>
+
+<section class="tester-console-wrap">
+<div class="tester-console-head">
+<strong>Salida</strong>
+<span id="testerMeta" class="meta">Sin ejecuciones</span>
+</div>
+<pre id="testerOutput" class="tester-output">Esperando ejecucion...</pre>
+</section>
+</section>
+
+<section class="panel page-section" data-page="backup">
+<h2><i class="bi bi-safe2"></i> Respaldo y migracion</h2>
+<p class="subtitle">Exporta tu biblioteca en JSON para moverla entre equipos, o importa un respaldo existente.</p>
+<div class="actions-row">
+<button id="exportBtn" type="button" class="secondary"><i class="bi bi-download"></i> Exportar biblioteca</button>
+<label class="import-label secondary">
+<i class="bi bi-upload"></i> Importar biblioteca
+<input id="importInput" type="file" accept="application/json" hidden>
+</label>
+</div>
+</section>
+</div>
+</div>
+</main>
+
+<template id="scriptTemplate">
+<article class="script-card">
+<div class="script-card-head">
+<h3 data-field="name"></h3>
+<span data-field="language" class="badge"></span>
+</div>
+<p data-field="description" class="description"></p>
+<p class="meta">Actualizado: <span data-field="updatedAt"></span></p>
+<pre class="preview"><code data-field="previewCode" class="language-clike"></code></pre>
+<div class="actions-row">
+<button data-action="view" type="button"><i class="bi bi-eye"></i> Ver completo</button>
+<button data-action="test" type="button" class="secondary"><i class="bi bi-terminal"></i> Probar</button>
+<button data-action="copy" type="button" class="secondary"><i class="bi bi-clipboard"></i> Copiar</button>
+<button data-action="download" type="button" class="secondary"><i class="bi bi-file-earmark-arrow-down"></i> Descargar</button>
+<button data-action="delete" type="button" class="danger"><i class="bi bi-trash"></i> Eliminar</button>
+</div>
+</article>
+</template>
+
+<dialog id="codeDialog">
+<form method="dialog" class="dialog-body">
+<header>
+<h3 id="dialogTitle"></h3>
+<button value="close" class="secondary"><i class="bi bi-x-circle"></i> Cerrar</button>
+</header>
+<pre id="dialogCode"><code id="dialogCodeInner" class="language-clike"></code></pre>
+</form>
+</dialog>
+
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+<script src="../../scripts/app.js"></script>
+
+</body>
+</html>
