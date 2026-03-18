@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ScriptForge</title>
+<link rel="icon" type="image/x-icon" href="../../img/icono.ico">
+<link rel="shortcut icon" type="image/x-icon" href="../../img/icono.ico">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -40,7 +42,29 @@ Nombre
 </label>
 <label>
 Lenguaje
-<input id="language" type="text" placeholder="Ej: Bash, Python, JavaScript">
+<select id="language">
+<option value="">Selecciona un lenguaje</option>
+<option value="JAVASCRIPT">JAVASCRIPT</option>
+<option value="TYPESCRIPT">TYPESCRIPT</option>
+<option value="PYTHON">PYTHON</option>
+<option value="BASH">BASH</option>
+<option value="POWERSHELL">POWERSHELL</option>
+<option value="CMD">CMD</option>
+<option value="BAT">BAT</option>
+<option value="SQL">SQL</option>
+<option value="PHP">PHP</option>
+<option value="RUBY">RUBY</option>
+<option value="GO">GO</option>
+<option value="JAVA">JAVA</option>
+<option value="CSHARP">CSHARP</option>
+<option value="HTML">HTML</option>
+<option value="CSS">CSS</option>
+<option value="JSON">JSON</option>
+<option value="YAML">YAML</option>
+<option value="XML">XML</option>
+<option value="MARKDOWN">MARKDOWN</option>
+<option value="TEXTO">TEXTO</option>
+</select>
 </label>
 </div>
 
@@ -49,7 +73,12 @@ Descripcion
 <textarea id="description" rows="3" required placeholder="Que hace este script y cuando usarlo"></textarea>
 </label>
 
-<section class="instruction-builder">
+<label class="toggle-inline" for="hasInstructions">
+<input id="hasInstructions" type="checkbox">
+El codigo llevara pasos e indicaciones
+</label>
+
+<section id="instructionBuilder" class="instruction-builder" hidden>
 <div class="list-head section-head">
 <h3><i class="bi bi-list-check"></i> Instrucciones por pasos</h3>
 <span id="stepCountPreview" class="count-pill">0 pasos</span>
@@ -78,13 +107,11 @@ O escribe la cantidad
 </section>
 
 <label>
-Subir archivo
-<input id="fileInput" type="file" accept=".js,.ts,.py,.sh,.ps1,.bat,.cmd,.sql,.php,.rb,.go,.java,.cs,.txt,.json,.yml,.yaml,.md,.xml,.html,.css">
-</label>
-
-<label>
 O pega el codigo
+<div class="code-editor">
+<pre id="codeLineNumbers" class="line-numbers" aria-hidden="true">1</pre>
 <textarea id="code" rows="8" placeholder="Pega aqui el codigo del script"></textarea>
+</div>
 </label>
 
 <div class="actions-row">
@@ -116,7 +143,7 @@ Buscar
 <h2><i class="bi bi-terminal"></i> Probador de Scripts</h2>
 <span id="testerStatus" class="count-pill tester-pill">Listo</span>
 </div>
-<p class="subtitle">Ejecucion real disponible para JavaScript dentro del navegador. CMD, BAT, PS1, Bash, Python y otros lenguajes requieren backend o app de escritorio.</p>
+<p class="subtitle">Ejecucion real disponible para JavaScript dentro del navegador. El probador valida ejecucion en sandbox y errores de runtime, pero no garantiza por si solo la logica de negocio completa. CMD, BAT, PS1, Bash, Python y otros lenguajes requieren backend o app de escritorio.</p>
 
 <div class="grid-2 tester-grid">
 <label>
@@ -133,33 +160,79 @@ Lenguaje detectado
 
 <label>
 Codigo a ejecutar
+<div class="code-editor">
+<pre id="testerCodeLineNumbers" class="line-numbers" aria-hidden="true">1</pre>
 <textarea id="testerCode" rows="12" placeholder="Aqui se cargara el codigo del script o puedes pegar JavaScript manualmente"></textarea>
+</div>
 </label>
 
 <div class="actions-row tester-actions">
 <button id="runScriptBtn" type="button"><i class="bi bi-play-fill"></i> Ejecutar</button>
+<button id="diagBtn" type="button" class="secondary"><i class="bi bi-clipboard2-pulse"></i> Diagnostico</button>
+<button id="copyTesterOutputBtn" type="button" class="secondary"><i class="bi bi-clipboard"></i> Copiar salida</button>
 <button id="clearTesterBtn" type="button" class="secondary"><i class="bi bi-arrow-counterclockwise"></i> Limpiar salida</button>
 </div>
+
+<section id="diagPanel" class="diag-panel" hidden>
+<div class="diag-head">
+<strong><i class="bi bi-clipboard2-check"></i> Resultado del diagnostico</strong>
+<span id="diagSummary" class="diag-summary"></span>
+</div>
+<ul id="diagList" class="diag-list"></ul>
+</section>
 
 <section class="tester-console-wrap">
 <div class="tester-console-head">
 <strong>Salida</strong>
 <span id="testerMeta" class="meta">Sin ejecuciones</span>
 </div>
-<pre id="testerOutput" class="tester-output">Esperando ejecucion...</pre>
+<textarea id="testerOutput" class="tester-output" spellcheck="false" placeholder="Esperando ejecucion..."></textarea>
 </section>
 </section>
 
 <section class="panel page-section" data-page="backup">
 <h2><i class="bi bi-safe2"></i> Respaldo y migracion</h2>
-<p class="subtitle">Exporta tu biblioteca en JSON para moverla entre equipos, o importa un respaldo existente.</p>
-<div class="actions-row">
-<button id="exportBtn" type="button" class="secondary"><i class="bi bi-download"></i> Exportar biblioteca</button>
-<label class="import-label secondary">
-<i class="bi bi-upload"></i> Importar biblioteca
+<p class="subtitle">Crea, descarga o restaura tu biblioteca de scripts. Cada respaldo queda registrado en el historial.</p>
+
+<div class="backup-actions">
+<div class="backup-card">
+<div class="backup-card-icon"><i class="bi bi-floppy2-fill"></i></div>
+<div>
+<strong>Crear respaldo</strong>
+<p>Guarda una copia del estado actual en el historial local.</p>
+</div>
+<button id="createBackupBtn" type="button"><i class="bi bi-plus-circle"></i> Crear</button>
+</div>
+
+<div class="backup-card">
+<div class="backup-card-icon"><i class="bi bi-cloud-arrow-down-fill"></i></div>
+<div>
+<strong>Descargar respaldo</strong>
+<p>Exporta la biblioteca como archivo JSON para guardar fuera del navegador.</p>
+</div>
+<button id="exportBtn" type="button" class="secondary"><i class="bi bi-download"></i> Descargar</button>
+</div>
+
+<div class="backup-card">
+<div class="backup-card-icon"><i class="bi bi-cloud-arrow-up-fill"></i></div>
+<div>
+<strong>Restaurar respaldo</strong>
+<p>Importa un archivo JSON y reemplaza la biblioteca actual.</p>
+</div>
+<label id="restoreLabel" class="import-label secondary">
+<i class="bi bi-upload"></i> Restaurar
 <input id="importInput" type="file" accept="application/json" hidden>
 </label>
 </div>
+</div>
+
+<section class="backup-history-wrap">
+<div class="list-head">
+<h3><i class="bi bi-clock-history"></i> Historial de respaldos</h3>
+<span id="backupCount" class="count-pill">0 respaldos</span>
+</div>
+<div id="backupHistoryList" class="backup-history-list"><p class="muted-msg">Sin respaldos guardados aun.</p></div>
+</section>
 </section>
 </div>
 </div>
@@ -191,6 +264,19 @@ Codigo a ejecutar
 <button value="close" class="secondary"><i class="bi bi-x-circle"></i> Cerrar</button>
 </header>
 <pre id="dialogCode"><code id="dialogCodeInner" class="language-clike"></code></pre>
+</form>
+</dialog>
+
+<dialog id="confirmDialog" class="confirm-dialog">
+<form method="dialog" class="dialog-body confirm-body">
+<header>
+<h3 id="confirmTitle"><i class="bi bi-exclamation-triangle"></i> Confirmar accion</h3>
+</header>
+<p id="confirmMessage" class="confirm-message">Esta accion eliminara los pasos escritos. Deseas continuar?</p>
+<div class="actions-row confirm-actions">
+<button id="confirmCancelBtn" value="cancel" type="submit" class="secondary"><i class="bi bi-x-circle"></i> No, mantener</button>
+<button id="confirmAcceptBtn" value="accept" type="submit"><i class="bi bi-check-circle"></i> Si, eliminar</button>
+</div>
 </form>
 </dialog>
 
