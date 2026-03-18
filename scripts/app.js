@@ -783,7 +783,39 @@ window.onerror = (message, source, line, column) => {
 </html>`;
 }
 
+function detectBlockedSandboxNavigation(code) {
+	const source = String(code || "");
+	const rules = [
+		{ label: "top.location / parent.location", regex: /\b(?:top|parent)\.location\b/i },
+		{ label: "window.location =", regex: /\bwindow\.location\s*=/i },
+		{ label: "location.href =", regex: /\b(?:window\.)?location\.href\s*=/i },
+		{ label: "location.assign/replace/reload", regex: /\b(?:window\.)?location\.(?:assign|replace|reload)\s*\(/i },
+		{ label: "window.open()", regex: /\bwindow\.open\s*\(/i }
+	];
+
+	for (const rule of rules) {
+		if (rule.regex.test(source)) {
+			return rule.label;
+		}
+	}
+
+	return "";
+}
+
 function runJavaScriptInSandbox(code) {
+	const blockedPattern = detectBlockedSandboxNavigation(code);
+	if (blockedPattern) {
+		return Promise.resolve({
+			status: "error",
+			elapsed: 0,
+			lines: [
+				"[ERROR] Se bloqueo una accion de navegacion no permitida en el sandbox.",
+				`[DETALLE] Patron detectado: ${blockedPattern}`,
+				"[AYUDA] El probador web no permite redirecciones ni apertura de ventanas."
+			]
+		});
+	}
+
 	destroyTesterFrame();
 
 	return new Promise((resolve) => {
